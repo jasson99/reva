@@ -107,3 +107,57 @@ vendor-bin/behat/composer.lock: vendor-bin/behat/composer.json
 
 composer.lock: composer.json
 	@echo composer.lock is not up to date.
+
+litmus-tests-services: 
+	cd ./tests/oc-integration-tests/local && \
+	../../../cmd/revad/revad -c frontend.toml && \
+	../../../cmd/revad/revad -c gateway.toml && \
+	../../../cmd/revad/revad -c storage-home.toml && \
+	../../../cmd/revad/revad -c storage-oc.toml && \
+	../../../cmd/revad/revad -c users.toml & \
+
+DEFAULTCOMMAND=docker run --rm --network=host \
+		-e LITMUS_URL=http://localhost:20080/remote.php/webdav \
+		-e LITMUS_USERNAME=einstein \
+		-e LITMUS_PASSWORD=relativity \
+		owncloud/litmus:latest
+ifdef TESTS
+		DockerCommand= docker run --rm --network=host \
+		-e LITMUS_URL=http://localhost:20080/remote.php/webdav \
+		-e LITMUS_USERNAME=einstein \
+		-e LITMUS_PASSWORD=relativity \
+		-e TESTS=${TESTS} \
+		owncloud/litmus:latest
+else
+		DockerCommand=$(DEFAULTCOMMAND)
+endif
+
+DEFAULTCOMMANDPUBLICWEBDAV=docker run --rm --network=host \
+		-e LITMUS_URL=http://localhost:20080/remote.php/dav/files/einstein \
+		-e LITMUS_USERNAME=einstein \
+		-e LITMUS_PASSWORD=relativity \
+		owncloud/litmus:latest
+ifdef TESTS
+		DockerCommandPublicWebdav= docker run --rm --network=host \
+		-e LITMUS_URL=http://localhost:20080/remote.php/dav/files/einstein \
+		-e LITMUS_USERNAME=einstein \
+		-e LITMUS_PASSWORD=relativity \
+		-e TESTS=${TESTS} \
+		owncloud/litmus:latest
+else
+		DockerCommandPublicWebdav=$(DEFAULTCOMMANDPUBLICWEBDAV)
+endif
+
+.PHONY: litmus-test
+litmus-test: litmus-tests-services
+	cd ./tests/oc-integration-tests/local && \
+	$(DockerCommand)
+	killall revad
+
+.PHONY: litmus-test-publicwebdav
+litmus-test-publicwebdav: litmus-tests-services
+	cd ./tests/oc-integration-tests/local && \
+	$(DockerCommandPublicWebdav)
+	killall revad
+
+
