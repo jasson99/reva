@@ -152,10 +152,12 @@ endif
 litmus-test: litmus-tests-services
 	cd ./tests/oc-integration-tests/local && \
 	$(DockerCommand)
+	killall revad
 
 .PHONY: litmus-test-publicwebdav
 litmus-test-publicwebdav: litmus-tests-services
 	cd ./tests/oc-integration-tests/local && \
 	$(DockerCommandPublicWebdav)
+	killall revad
 
 
