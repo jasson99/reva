@@ -116,14 +116,16 @@ litmus-tests-services:
 	../../../cmd/revad/revad -c storage-oc.toml && \
 	../../../cmd/revad/revad -c users.toml & \
 
+LITMUS_URL=http://localhost:20080/remote.php/webdav
+
 DEFAULTCOMMAND=docker run --rm --network=host \
-		-e LITMUS_URL=http://localhost:20080/remote.php/webdav \
+		-e LITMUS_URL=${LITMUS_URL} \
 		-e LITMUS_USERNAME=einstein \
 		-e LITMUS_PASSWORD=relativity \
 		owncloud/litmus:latest
 ifdef TESTS
 		DockerCommand= docker run --rm --network=host \
-		-e LITMUS_URL=http://localhost:20080/remote.php/webdav \
+		-e LITMUS_URL=${LITMUS_URL} \
 		-e LITMUS_USERNAME=einstein \
 		-e LITMUS_PASSWORD=relativity \
 		-e TESTS=${TESTS} \
@@ -136,3 +138,7 @@ endif
 litmus-test: litmus-tests-services
 	cd ./tests/oc-integration-tests/local && \
 	$(DockerCommand)
+
+.PHONY: litmus-test-publicwebdav
+litmus-test-publicwebdav: litmus-tests-services
+	cd ./tests/oc-integration-tests/local && \
